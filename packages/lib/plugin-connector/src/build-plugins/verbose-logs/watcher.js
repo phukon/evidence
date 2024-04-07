@@ -17,7 +17,7 @@ export async function watchDirectory(directoryPath, totalFiles, onProgressUpdate
   const initialProgress = calculateProgress(currentFiles, totalFiles);
 
   if (initialProgress >= 100) {
-    console.log('Progress already at 100% or greater. Exiting watcher.');
+    // console.log('\nProgress already at 100% or greater');
     if (typeof onStopCallback === 'function') {
       onStopCallback();
     }

@@ -9,7 +9,7 @@ export const verboseLogs = {
 		const directoryPath = '.svelte-kit/output/prerendered/pages';
 		getPagesDir('../../pages')
 			.then((totalExpectedFiles) => {
-				console.log('Build started');
+				// console.log('Build started');
 				watchDirectory(
 					directoryPath,
 					totalExpectedFiles,
@@ -17,7 +17,7 @@ export const verboseLogs = {
 						console.log(`Build Progress: ${progress}%`);
 					},
 					() => {
-						console.log('Build completed.');
+						console.log('\n All the pages have been built.');
 					}
 				);
 			})
