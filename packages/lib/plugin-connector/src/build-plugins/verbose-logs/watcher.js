@@ -1,5 +1,5 @@
 import chokidar from 'chokidar';
-import { countFiles } from './fileCounter.js';
+import { contentCounter } from './contentCounter.js';
 import { calculateProgress } from './progressCalculator.js';
 import { waitForDirectoryCreation } from './wait-creation.js';
 
@@ -11,35 +11,35 @@ import { waitForDirectoryCreation } from './wait-creation.js';
  * @param {Function} onStopCallback
  */
 export async function watchDirectory(directoryPath, totalFiles, onProgressUpdate, onStopCallback) {
-  await waitForDirectoryCreation(directoryPath);
+	await waitForDirectoryCreation(directoryPath);
 
-  const currentFiles = await countFiles(directoryPath);
-  const initialProgress = calculateProgress(currentFiles, totalFiles);
+	const currentFiles = await contentCounter(directoryPath);
+	const initialProgress = calculateProgress(currentFiles, totalFiles);
 
-  if (initialProgress >= 100) {
-    // console.log('\nProgress already at 100% or greater');
-    if (typeof onStopCallback === 'function') {
-      onStopCallback();
-    }
-    return;
-  }
+	if (initialProgress >= 100) {
+		// console.log('\nProgress already at 100% or greater');
+		if (typeof onStopCallback === 'function') {
+			onStopCallback();
+		}
+		return;
+	}
 
-  const watcher = chokidar.watch(directoryPath, { ignoreInitial: true });
+	const watcher = chokidar.watch(directoryPath, { ignoreInitial: true });
 
-  async function updateProgress() {
-    const currentFiles = await countFiles(directoryPath);
-    const progress = calculateProgress(currentFiles, totalFiles);
-    onProgressUpdate(progress);
+	async function updateProgress() {
+		const currentFiles = await contentCounter(directoryPath);
+		const progress = calculateProgress(currentFiles, totalFiles);
+		onProgressUpdate(progress);
 
-    if (progress >= 100) {
-      watcher.close();
+		if (progress >= 100) {
+			watcher.close();
 
-      if (typeof onStopCallback === 'function') {
-        onStopCallback();
-      }
-    }
-  }
+			if (typeof onStopCallback === 'function') {
+				onStopCallback();
+			}
+		}
+	}
 
-  watcher.on('add', updateProgress);
-  watcher.on('addDir', updateProgress);
+	watcher.on('add', updateProgress);
+	watcher.on('addDir', updateProgress);
 }

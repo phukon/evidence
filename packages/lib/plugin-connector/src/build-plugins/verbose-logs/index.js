@@ -4,7 +4,7 @@ import { watchDirectory } from './watcher.js';
 /** @type {import("vite").Plugin} */
 export const verboseLogs = {
 	name: 'evidence:verbose-logs',
-  
+
 	buildStart() {
 		const directoryPath = '.svelte-kit/output/prerendered/pages';
 		getPagesDir('../../pages')

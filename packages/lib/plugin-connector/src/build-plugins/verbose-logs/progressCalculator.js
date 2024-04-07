@@ -5,6 +5,6 @@
  * @returns {number} The percentage of completion.
  */
 export function calculateProgress(current, total) {
-  if (total === 0) return 0;
-  return Math.round((current / total) * 100);
+	if (total === 0) return 0;
+	return Math.round((current / total) * 100);
 }
