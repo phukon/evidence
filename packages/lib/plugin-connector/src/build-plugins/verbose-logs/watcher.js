@@ -5,16 +5,9 @@ import { fileURLToPath } from 'url';
 import chokidar from 'chokidar';
 import { waitForDirectoryCreation } from './wait-creation.js';
 import { countDirectories } from './countDir.js';
-import EventEmitter from 'events';
 import os from 'os';
 const { tmpdir: tempDir } = os;
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
-	/**
-	 * Custom event emitter for the parent process.
-	 */
-	class ParentEmitter extends EventEmitter {}
-	const parentEmitter = new ParentEmitter();
 
 /**
  * Returns the list of template directories to be watched.
@@ -41,14 +34,14 @@ const dirWatchList = async (targetDirectory, templatePagePaths) => {
 	 * The timer will only start after the target directory has been
 	 * created, therefore the process will not be killed prematurely.
 	 */
-	const resetTimeout = () => {
-		// @ts-ignore
-		clearTimeout(timeout);
-		timeout = setTimeout(() => {
-			console.log('No activity detected for over 10 seconds. Killing process...');
-			process.exit(1);
-		}, 15_000);
-	};
+	// const resetTimeout = () => {
+	// 	// @ts-ignore
+	// 	clearTimeout(timeout);
+	// 	timeout = setTimeout(() => {
+	// 		console.log('No activity detected for over 10 seconds. Killing process...');
+	// 		process.exit(1);
+	// 	}, 15_000);
+	// };
 
   	/**
 	 * Ensures that a directory exists, creating it if it doesn't.
@@ -80,7 +73,7 @@ export async function watchDirectory(directoryPath, dirs) {
 	});
 
 	// Redirect stdout and stderr to log files
-	console.log('Redirecting stdout and stderr...');
+	console.log('Redirecting stdout and stderr...\n ctrl + c to safely exit');
 	// @ts-ignore
 	process.stdout.write = process.stderr.write = stdoutLog.write.bind(stdoutLog);
 	console.log('Stream redirection setup complete.');
@@ -101,13 +94,8 @@ export async function watchDirectory(directoryPath, dirs) {
 	});
 
 	// @ts-ignore
-	blessedAppProcess.on('message', ({ type }) => {
-		console.log(`Message from Blessed app: ${type}`);
-	});
-
-	// Forward messages from the parent process to the forked process
-	parentEmitter.on('message', (count, dir) => {
-		CHILD_READY_FLAG && blessedAppProcess.send({ type: 'dataFromParent', count, dir });
+	blessedAppProcess.on('message', ({ type, result }) => {
+		console.log(`Message from childprocess:\n type: ${type} \nmessage: ${result}`);
 	});
 
 	try {
@@ -135,9 +123,9 @@ export async function watchDirectory(directoryPath, dirs) {
 			watchers.push(watcher);
 
 			watcher.on('addDir', async () => {
-				resetTimeout();
+				// resetTimeout();
 				let count = await countDirectories(dir);
-				parentEmitter.emit('message', count, dir);
+        CHILD_READY_FLAG && blessedAppProcess.send({ type: 'dataFromParent', count, dir });
 			});
 		}
 	} catch (err) {
